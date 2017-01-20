@@ -9,35 +9,29 @@ module.exports = function(RED) {
         var confignode = RED.nodes.getNode(n.confignode); 
         var node = this;
         this.interval = parseInt(n.interval);
-        var evohomeSession = null;
 
         function publishEvohomeStatus() {
-            node.send(evohomeSession);
-            evohomeSession.getLocations().then(function(locations) {
-                node.warn(locations[0].name);
-                locations[0].devices.forEach(function(device) {
-                    if (device.thermostat) {
-                        var msgout = {
-                        payload : {
-                            id : device.deviceID,
-                            name : device.name.toLowerCase(),
-                            temperature : device.thermostat.indoorTemperature,
-                            setpoint : device.thermostat.changeableValues.heatSetpoint.value} 
+            evohome.login(confignode.userid, confignode.passwd, confignode.applid).then(function(session) {
+	        session.getLocations().then(function(locations) {
+                    locations[0].devices.forEach(function(device) {
+                        if (device.thermostat) {
+                            var msgout = {
+                            payload : {
+                                id : device.deviceID,
+                                name : device.name.toLowerCase(),
+                                temperature : device.thermostat.indoorTemperature,
+                                setpoint : device.thermostat.changeableValues.heatSetpoint.value} 
+                                }
+                            node.send(msgout);
                         }
-                        node.send(msgout);
-                    }
+                    });
+                }).fail(function(err) {
+                    node.warn(err);
                 });
             }).fail(function(err) {
                 node.warn(err);
             });
         }
-
-	evohome.login(confignode.userid, confignode.passwd, confignode.applid).then(function(session) {
-	    evohomeSession = session;
-	}).fail(function(err) {
-	    node.warn(err);
-	});
-	node.send(evohomeSession);
 
         var tick = setInterval(function() {
             publishEvohomeStatus();
