@@ -11,13 +11,10 @@ module.exports = function(RED) {
         
         this.on('input', function (msg) {
             if (msg.payload.id) {
-                node.warn('id ok');
                 evohome.login(confignode.userid, confignode.passwd, confignode.applid).then(function(session) {
                     if (msg.payload.temperature && msg.payload.minutes) {
-                        node.warn('temporary');
                         session.modifyHeatSetpoint(msg.payload.id, "Temporary", msg.payload.temperature, parseInt(msg.payload.minutes));
                     } else if (msg.payload.temperature) {
-                        node.warn('hold');
                         session.modifyHeatSetpoint(msg.payload.id, "Hold", msg.payload.temperature);
                     } else {
                         session.modifyHeatSetpoint(msg.payload.id, "Scheduled");
