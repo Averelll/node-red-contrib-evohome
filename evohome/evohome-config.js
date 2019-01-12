@@ -6,5 +6,10 @@ module.exports = function(RED) {
         this.applid = config.applid;
     }
 
-    RED.nodes.registerType("evohome-config", EvohomeNode);
+    RED.nodes.registerType("evohome-config", EvohomeNode,{
+        credentials: {
+            userid: {type:"text"},
+            passwd: {type: "password"}
+        }
+    });
 };
